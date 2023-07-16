@@ -25,7 +25,7 @@ products.forEach((product) => {
     </div>
 
     <div class="product-quantity-container">
-      <select>
+      <select class="js-quantity-selector-${product.id}">
         <option selected value="1">1</option>
         <option value="2">2</option>
         <option value="3">3</option>
@@ -41,8 +41,8 @@ products.forEach((product) => {
 
     <div class="product-spacer"></div>
 
-    <div class="added-to-cart">
-      <img src="images/icons/checkmark.png">
+    <div class="added-to-cart js-added-to-cart-${product.id}">
+      <img src="/images/icons/checkmark.png">
       Added
     </div>
 
@@ -58,10 +58,13 @@ console.log(productsHTML);
 
 document.querySelector('.js-products-grid').innerHTML = productsHTML;
 
+const addedMessageTimeouts = {};
+
 document.querySelectorAll('.js-add-to-cart').forEach((button) => {
   button.addEventListener('click', () => {
+
     const productId = button.dataset.productId;
-    
+
     let matchingItem;
 
     cart.forEach((item) => {
@@ -70,12 +73,15 @@ document.querySelectorAll('.js-add-to-cart').forEach((button) => {
       }
     });
 
+    const quantitySelector = document.querySelector(`.js-quantity-selector-${productId}`);
+    //console.log(quantitySelector.value);
+
     if(matchingItem){
-      matchingItem.quantity ++;
+      matchingItem.quantity += Number(quantitySelector.value);
     } else {
       cart.push({
         productId: productId,
-        quantity: 1
+        quantity: Number(quantitySelector.value)
       });
     }
     
@@ -86,6 +92,22 @@ document.querySelectorAll('.js-add-to-cart').forEach((button) => {
     })
     
     document.querySelector('.js-cart-quantity').innerHTML = cartQuantity;
+
+    const addMessage = document.querySelector(`.js-added-to-cart-${productId}`);
+
+    addMessage.classList.add('added-to-cart-visible');
+    setTimeout(() => {
+      const previousTimeoutId = addedMessageTimeouts[productId];
+      if(previousTimeoutId){
+        clearTimeout(previousTimeoutId);
+      }
+
+      const timeoutId = setTimeout(() => {
+        addMessage.classList.remove('added-to-cart-visible');
+      },2000);
+
+      addedMessageTimeouts[productId] = timeoutId;
+    });
 
     console.log(cart);
   });
